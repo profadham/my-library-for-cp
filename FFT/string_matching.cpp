@@ -97,21 +97,22 @@ void string_match(string& s, string& patt) {
 
     vector<int> ans_match(n);
 
+    ll sh = m-1;
     for (int i = 0; i < 26; ++i) {
         for (int j = 0; j < n; ++j) {
             poly1[j] = (s[j] - 'a') == i;
         }
         for (int j = 0; j < m; ++j) {
-            poly2[j] = (patt[m-j-1] - 'a') == i;
+            poly2[sh-j] = (patt[j] - 'a') == i;
         }
         vector<ll> ans = multiply(poly1, poly2);
         for (int j = 0; j < n; ++j) {
-            ans_match[j] += ans[m-1+j];
+            ans_match[j] += ans[j];
         }
     }
-    for (ll i= 0; i < n-m; i++) {
+    for (ll i= 0; i <= n-m; i++) {
         //cout << i + sh << " " << ans_match.size() << "\n";
-        cout << ans_match[i] << " ";
+        cout << ans_match[sh+i] << " ";
     }
 }
 
