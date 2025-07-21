@@ -1,5 +1,4 @@
-
-    vector<ll> pos(n+1), heavy(n+1,-1), sz(n+1), depth(n+1), top(n+1), par(n+1,-1);
+vector<ll> pos(n+1), heavy(n+1,-1), sz(n+1), depth(n+1), top(n+1), par(n+1,-1);
     ll time = 0;
     function <void(ll,ll)> dfs = [&](ll u, ll p){
         sz[u] = 1;
@@ -27,22 +26,19 @@
     };
     dfs(1,0);
     hld(1,1);
-    fenwick<ll> flat(n);
-    for (ll i = 1; i <= n; i++)flat.set(pos[i],a[i]);
+    for (ll i =1; i <= n;  i++) t[n+pos[i]] = a[i];
+    build();
     auto query = [&](ll u, ll v){
         ll res = 0;
         while (top[u] != top[v]){
             if (depth[top[u]] < depth[top[v]]) swap(u,v);
-            res += flat.query(pos[u]);
-            if (pos[top[u]]) res -= flat.query(pos[top[u]]-1);
+            res = max(res,qry(pos[top[u]],pos[u]+1));
             u = par[top[u]];
         }
         if (depth[v] < depth[u]) swap(u,v);
-        res += flat.query(pos[v]);
-        if (pos[top[v]]) res -= flat.query(pos[top[v]]-1);
+        res = max(qry(pos[u],pos[v]+1),res);
         return res;
     };
     auto upd = [&](ll u,ll x){
-        flat.set(pos[u],x);
+        modify(pos[u],x);
     };
-
