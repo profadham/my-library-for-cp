@@ -1,42 +1,35 @@
-//hld template:
-
 #include <bits/stdc++.h>
-#define ll long long
-#define int long long
+#define ll int
 using namespace std;
 const ll mod = 998244353;
 
-template <class T> struct fenwick {
-    int n;
-    vector<T> a, bit;
+const int N = 2e5+5;  // maximum array size
+int n;                  // actual array size
+int t[2 * N];
 
-    fenwick() {}
+void build() {
+    // build internal nodes: each parent is max of its two children
+    for (int i = n - 1; i > 0; --i)
+        t[i] = max(t[i<<1], t[i<<1|1]);
+}
 
-    fenwick(int _n) : n(_n + 1), a(n + 1), bit(n + 1) {}
+void modify(int p, int value) {
+    // set value at position p
+    for (t[p += n] = value; p > 1; p >>= 1)
+        t[p>>1] = max(t[p], t[p^1]);
+}
 
-    void add(int i, T x) {
-        a[i] += x;
-        for (++i; i <= n; i += i & -i) bit[i] += x ;
+int qry(int l, int r) {
+    // maximum on interval [l, r)
+    int res = INT_MIN;
+    for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+        if (l & 1) res = max(res, t[l++]);
+        if (r & 1) res = max(res, t[--r]);
     }
-
-    void add(int l, int r, T x){
-        add(l , x);
-        add(r+1 , -x);
-    }
-
-    void set(int i, T val) {
-        add(i, val - a[i]);
-    }
-
-    T query(int i) {
-        T sum = 0;
-        for (++i; i >= 1; i -= i & -i) sum += bit[i] ;
-        return sum;
-    }
-};
-
+    return res;
+}
 void solve(){
-    ll n, q;
+    ll q;
     cin >> n >>q;
     vector<vector<ll>> g(n+1);
     vector<ll>a(n+1);
@@ -74,35 +67,33 @@ void solve(){
     };
     dfs(1,0);
     hld(1,1);
-    fenwick<ll> flat(n);
-    for (ll i = 1; i <= n; i++)flat.set(pos[i],a[i]);
+    for (ll i =1; i <= n;  i++) t[n+pos[i]] = a[i];
+    build();
     auto query = [&](ll u, ll v){
         ll res = 0;
         while (top[u] != top[v]){
             if (depth[top[u]] < depth[top[v]]) swap(u,v);
-            res += flat.query(pos[u]);
-            if (pos[top[u]]) res -= flat.query(pos[top[u]]-1);
+            res = max(res,qry(pos[top[u]],pos[u]+1));
             u = par[top[u]];
         }
         if (depth[v] < depth[u]) swap(u,v);
-        res += flat.query(pos[v]);
-        if (pos[top[v]]) res -= flat.query(pos[top[v]]-1);
+        res = max(qry(pos[u],pos[v]+1),res);
         return res;
     };
     auto upd = [&](ll u,ll x){
-        flat.set(pos[u],x);
+        modify(pos[u],x);
     };
     while (q--){
         ll ty, s, x;
-        cin >> ty >> s;
+        cin >> ty >> s>>x;
         if (ty==1){
-            cin >> x;
             upd(s,x);
         }
         else{
-            cout << query(1,s) << "\n";
+            cout << query(s,x) << " ";
         }
     }
+    cout << "\n";
 }
 
 signed main() {
